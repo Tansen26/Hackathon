@@ -1,7 +1,8 @@
-requests
-pandas
 streamlit
+pandas
 prophet
 matplotlib
 numpy
+requests
 altair>=4.0.0,<5.0
+pystan
