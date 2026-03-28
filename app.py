@@ -46,7 +46,7 @@ def get_mandis(state):
     return mandis
 
 # ---------------------------
-# FETCH DATA FUNCTION
+# FETCH DATA FUNCTION (IMPROVED)
 # ---------------------------
 @st.cache_data
 def load_data(crop, state, mandi):
@@ -54,25 +54,46 @@ def load_data(crop, state, mandi):
         "api-key": API_KEY,
         "format": "json",
         "limit": 1000,
-        "filters[commodity]": crop,
         "filters[state]": state,
+        "filters[commodity]": crop,
         "filters[market]": mandi
     }
-    
-    response = requests.get(URL, params=params)
+
+    try:
+        response = requests.get(URL, params=params, timeout=10)
+        response.raise_for_status()   # Raise exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        st.error(f"Network error: {e}")
+        return pd.DataFrame()
+
     data = response.json()
-    
-    df = pd.DataFrame(data.get('records', []))
 
-    if df.empty:
-        return df
+    # Check if API returned an error
+    if data.get("status") != "ok":
+        st.error(f"API error: {data.get('message', 'Unknown error')}")
+        st.json(data)   # Show the full response for debugging
+        return pd.DataFrame()
 
-    # CLEANING
-    df['modal_price'] = pd.to_numeric(df['modal_price'], errors='coerce')
-    df['arrival_date'] = pd.to_datetime(df['arrival_date'])
+    if not data.get("records"):
+        st.warning("No data found for this combination. Try another state/crop/mandi.")
+        return pd.DataFrame()
 
-    df = df.dropna(subset=['modal_price'])
-    df = df.sort_values('arrival_date')
+    df = pd.DataFrame(data["records"])
+
+    # Ensure required columns exist
+    required = ["modal_price", "arrival_date"]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        st.error(f"Missing columns in response: {missing}")
+        st.write("Available columns:", list(df.columns))
+        return pd.DataFrame()
+
+    # Clean data
+    df["modal_price"] = pd.to_numeric(df["modal_price"], errors="coerce")
+    # The API returns date in dd/mm/yyyy format
+    df["arrival_date"] = pd.to_datetime(df["arrival_date"], format="%d/%m/%Y", errors="coerce")
+    df = df.dropna(subset=["modal_price", "arrival_date"])
+    df = df.sort_values("arrival_date")
 
     return df
 
