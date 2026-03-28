@@ -1,7 +1,8 @@
-streamlit==1.29.0
-pandas==2.0.3
-numpy==1.24.3
-prophet==1.1.5
-matplotlib==3.7.2
-requests==2.31.0
-plotly==5.17.0
+streamlit==1.35.0
+pandas==2.2.2
+numpy==1.26.4
+matplotlib==3.9.0
+requests==2.32.3
+plotly==5.22.0
+packaging==24.0
+scikit-learn==1.5.0
