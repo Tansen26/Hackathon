@@ -1,3 +1,4 @@
+import os
 import requests
 import pandas as pd
 import streamlit as st
@@ -8,7 +9,13 @@ import numpy as np
 # ---------------------------
 # CONFIG
 # ---------------------------
-API_KEY = "579b464db66ec23bdd0000017ce9d9b9e36c456f41f78d04d7c1e97d"
+# For Streamlit Cloud: use st.secrets
+# For other environments: use environment variable
+if "API_KEY" in st.secrets:
+    API_KEY = st.secrets["API_KEY"]
+else:
+    API_KEY = os.environ.get("API_KEY", "your-default-key")
+
 URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 
 st.set_page_config(page_title="AI Mandi Predictor", layout="wide")
