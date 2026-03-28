@@ -4,3 +4,4 @@ streamlit
 prophet
 matplotlib
 numpy
+altair>=4.0.0,<5.0
